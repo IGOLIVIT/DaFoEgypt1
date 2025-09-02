@@ -35,7 +35,8 @@ struct HistoryView: View {
     }
     
     var body: some View {
-        ScrollView {
+        NavigationView {
+            ScrollView {
             VStack(spacing: 24) {
                 // Section selector
                 sectionSelector
@@ -61,6 +62,8 @@ struct HistoryView: View {
                 animateCards = true
             }
         }
+        }
+        .navigationBarHidden(true)
     }
     
     @ViewBuilder

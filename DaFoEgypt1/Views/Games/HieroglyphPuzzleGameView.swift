@@ -41,22 +41,26 @@ struct HieroglyphPuzzleGameView: View {
             )
             .ignoresSafeArea()
             
-            VStack(spacing: 20) {
-                // Header
-                headerView
-                
-                // Game content
-                if gameOver {
-                    gameOverView
-                } else if showGameComplete {
-                    gameCompleteView
-                } else {
-                    gameContentView
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 20) {
+                    // Header
+                    headerView
+                    
+                    // Game content
+                    if gameOver {
+                        gameOverView
+                    } else if showGameComplete {
+                        gameCompleteView
+                    } else {
+                        gameContentView
+                    }
+                    
+                    // Add some bottom padding for better scrolling
+                    Spacer(minLength: 50)
                 }
-                
-                Spacer()
+                .padding(.horizontal, 20)
+                .padding(.top, 10)
             }
-            .padding(.horizontal, 20)
         }
         .onAppear {
             startGame()

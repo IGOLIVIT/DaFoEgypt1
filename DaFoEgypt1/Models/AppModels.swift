@@ -347,18 +347,20 @@ struct PyramidBlock: Identifiable, Codable {
     let size: CGSize
     var isPlaced: Bool
     let level: Int
+    let hieroglyph: String
     
     // Custom Codable implementation for CGPoint and CGSize
     enum CodingKeys: String, CodingKey {
-        case id, positionX, positionY, sizeWidth, sizeHeight, isPlaced, level
+        case id, positionX, positionY, sizeWidth, sizeHeight, isPlaced, level, hieroglyph
     }
     
-    init(id: UUID = UUID(), position: CGPoint, size: CGSize, isPlaced: Bool = false, level: Int) {
+    init(id: UUID = UUID(), position: CGPoint, size: CGSize, isPlaced: Bool = false, level: Int, hieroglyph: String = "𓂀") {
         self.id = id
         self.position = position
         self.size = size
         self.isPlaced = isPlaced
         self.level = level
+        self.hieroglyph = hieroglyph
     }
     
     init(from decoder: Decoder) throws {
@@ -372,6 +374,7 @@ struct PyramidBlock: Identifiable, Codable {
         size = CGSize(width: sizeWidth, height: sizeHeight)
         isPlaced = try container.decode(Bool.self, forKey: .isPlaced)
         level = try container.decode(Int.self, forKey: .level)
+        hieroglyph = try container.decodeIfPresent(String.self, forKey: .hieroglyph) ?? "𓂀"
     }
     
     func encode(to encoder: Encoder) throws {
@@ -383,7 +386,9 @@ struct PyramidBlock: Identifiable, Codable {
         try container.encode(size.height, forKey: .sizeHeight)
         try container.encode(isPlaced, forKey: .isPlaced)
         try container.encode(level, forKey: .level)
+        try container.encode(hieroglyph, forKey: .hieroglyph)
     }
+
 }
 
 // MARK: - Animation States

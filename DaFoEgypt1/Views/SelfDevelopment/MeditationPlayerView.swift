@@ -24,6 +24,7 @@ struct MeditationPlayerView: View {
     @State private var audioPlayer: AVAudioPlayer?
     @State private var viewAppeared = false
     @State private var backgroundReady = true // Фон всегда готов
+    @State private var animationStarted = false
     
     init(meditation: MeditationType) {
         self.meditation = meditation
@@ -270,11 +271,14 @@ struct MeditationPlayerView: View {
     }
     
     private func setupMeditation() {
-        startBreathingAnimation()
         setupAudio()
+        // Анимация будет запускаться только при нажатии Play
     }
     
     private func startBreathingAnimation() {
+        guard !animationStarted else { return }
+        animationStarted = true
+        
         withAnimation(.easeInOut(duration: 4.0).repeatForever(autoreverses: true)) {
             breatheScale = 1.3
         }
@@ -306,6 +310,7 @@ struct MeditationPlayerView: View {
     
     private func startMeditation() {
         isPlaying = true
+        startBreathingAnimation() // Запускаем анимацию при старте медитации
         playMeditationSound() // Звук начала медитации
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             currentTime += 1
@@ -320,12 +325,25 @@ struct MeditationPlayerView: View {
         isPlaying = false
         timer?.invalidate()
         timer = nil
+        // При паузе анимация продолжается, но медленнее
+        withAnimation(.easeInOut(duration: 6.0).repeatForever(autoreverses: true)) {
+            breatheScale = 1.1
+        }
     }
     
     private func stopMeditation() {
         isPlaying = false
         timer?.invalidate()
         timer = nil
+        stopBreathingAnimation()
+    }
+    
+    private func stopBreathingAnimation() {
+        animationStarted = false
+        withAnimation(.easeInOut(duration: 0.5)) {
+            breatheScale = 1.0
+            glowIntensity = 0.3
+        }
     }
     
     private func restartMeditation() {

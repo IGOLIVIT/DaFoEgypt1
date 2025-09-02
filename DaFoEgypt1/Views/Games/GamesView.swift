@@ -13,7 +13,8 @@ struct GamesView: View {
     @State private var selectedGame: GameType? = nil
     
     var body: some View {
-        ScrollView {
+        NavigationView {
+            ScrollView {
             VStack(spacing: 24) {
                 // Header
                 headerView
@@ -38,6 +39,8 @@ struct GamesView: View {
         .fullScreenCover(item: $selectedGame) { game in
             gameView(for: game)
         }
+        }
+        .navigationBarHidden(true)
     }
     
     @ViewBuilder
@@ -64,7 +67,11 @@ struct GamesView: View {
                 .font(EgyptianFonts.headline())
                 .foregroundColor(EgyptianColors.textDark)
             
-            HStack(spacing: 16) {
+            LazyVGrid(columns: [
+                GridItem(.flexible()),
+                GridItem(.flexible()),
+                GridItem(.flexible())
+            ], spacing: 16) {
                 scoreCard(
                     title: "Hieroglyphs",
                     score: appState.gameScores.hieroglyphPuzzleHighScore,
@@ -97,19 +104,23 @@ struct GamesView: View {
         VStack(spacing: 8) {
             Text(icon)
                 .font(.system(size: 24))
+                .minimumScaleFactor(0.8)
             
             Text("\(score)")
                 .font(.system(size: 20, weight: .bold))
                 .foregroundColor(color)
+                .minimumScaleFactor(0.8)
             
             Text(title)
                 .font(.system(size: 12, weight: .medium))
                 .foregroundColor(EgyptianColors.textDark)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
+                .minimumScaleFactor(0.7)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
+        .padding(.horizontal, 8)
         .background(
             RoundedRectangle(cornerRadius: 12)
                 .fill(color.opacity(0.1))
@@ -118,7 +129,7 @@ struct GamesView: View {
     
     @ViewBuilder
     private var gamesGrid: some View {
-        LazyVGrid(columns: [GridItem(.flexible())], spacing: 16) {
+        LazyVGrid(columns: adaptiveColumns, spacing: 16) {
             gameCard(
                 game: .hieroglyphPuzzle,
                 title: "Hieroglyph Puzzle",
@@ -148,6 +159,14 @@ struct GamesView: View {
         }
     }
     
+    private var adaptiveColumns: [GridItem] {
+        // Use different column layouts based on device size
+        let columns = [
+            GridItem(.adaptive(minimum: 300, maximum: 500), spacing: 16)
+        ]
+        return columns
+    }
+    
     private func gameCard(game: GameType, title: String, description: String, icon: String, color: Color, delay: Double) -> some View {
         Button(action: {
             selectedGame = game
@@ -156,6 +175,7 @@ struct GamesView: View {
                 HStack {
                     Text(icon)
                         .font(.system(size: 40))
+                        .minimumScaleFactor(0.8)
                     
                     Spacer()
                     
@@ -163,10 +183,12 @@ struct GamesView: View {
                         Text("High Score")
                             .font(.system(size: 12))
                             .foregroundColor(EgyptianColors.textDark.opacity(0.6))
+                            .minimumScaleFactor(0.8)
                         
                         Text("\(highScore(for: game))")
                             .font(.system(size: 16, weight: .bold))
                             .foregroundColor(color)
+                            .minimumScaleFactor(0.8)
                     }
                 }
                 
@@ -174,17 +196,22 @@ struct GamesView: View {
                     .font(EgyptianFonts.headline())
                     .foregroundColor(EgyptianColors.textDark)
                     .multilineTextAlignment(.leading)
+                    .minimumScaleFactor(0.8)
+                    .lineLimit(2)
                 
                 Text(description)
                     .font(EgyptianFonts.body())
                     .foregroundColor(EgyptianColors.textDark.opacity(0.8))
                     .lineSpacing(4)
                     .multilineTextAlignment(.leading)
+                    .minimumScaleFactor(0.8)
+                    .lineLimit(3)
                 
                 HStack {
                     Text("Play Now")
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(EgyptianColors.textLight)
+                        .minimumScaleFactor(0.8)
                     
                     Spacer()
                     

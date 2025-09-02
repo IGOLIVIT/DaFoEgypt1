@@ -36,33 +36,69 @@ struct SelfDevelopmentView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-            VStack(spacing: 24) {
-                // Section selector
-                sectionSelector
+            ZStack {
+                // Background
+                LinearGradient(
+                    colors: [
+                        EgyptianColors.papyrus,
+                        EgyptianColors.desertSand.opacity(0.8),
+                        EgyptianColors.papyrus
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
                 
-                // Content based on selected section
-                switch selectedSection {
-                case .meditation:
-                    MeditationSectionView()
-                        .environmentObject(appState)
-                case .journal:
-                    JournalSectionView()
-                        .environmentObject(appState)
-                case .mindTraining:
-                    MindTrainingSectionView()
-                        .environmentObject(appState)
+                ScrollView {
+                VStack(spacing: 24) {
+                    // Header
+                    headerView
+                    
+                    // Section selector
+                    sectionSelector
+                    
+                    // Content based on selected section
+                    switch selectedSection {
+                    case .meditation:
+                        MeditationSectionView()
+                            .environmentObject(appState)
+                    case .journal:
+                        JournalSectionView()
+                            .environmentObject(appState)
+                    case .mindTraining:
+                        MindTrainingSectionView()
+                            .environmentObject(appState)
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
+                .padding(.bottom, 100) // Extra padding for tab bar
+            }
+            }
+            .onAppear {
+                withAnimation(.easeInOut(duration: 0.8).delay(0.2)) {
+                    animateCards = true
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 20)
         }
-        .onAppear {
-            withAnimation(.easeInOut(duration: 0.8).delay(0.2)) {
-                animateCards = true
-            }
+        .navigationBarHidden(true)
+    }
+    
+    @ViewBuilder
+    private var headerView: some View {
+        VStack(spacing: 12) {
+            Text("🧘‍♀️ Self Development")
+                .font(EgyptianFonts.title())
+                .foregroundColor(EgyptianColors.textDark)
+            
+            Text("Develop your mind, body, and spirit with ancient Egyptian wisdom")
+                .font(EgyptianFonts.body())
+                .foregroundColor(EgyptianColors.textDark.opacity(0.8))
+                .multilineTextAlignment(.center)
+                .lineSpacing(4)
         }
-        }
+        .opacity(animateCards ? 1.0 : 0.0)
+        .animation(.easeInOut(duration: 0.8), value: animateCards)
     }
     
     @ViewBuilder
