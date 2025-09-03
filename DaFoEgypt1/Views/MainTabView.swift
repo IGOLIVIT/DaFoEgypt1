@@ -8,72 +8,73 @@
 import SwiftUI
 
 struct MainTabView: View {
-    @StateObject private var appState = AppState()
+    @EnvironmentObject var appState: AppState
     @State private var selectedTab: MainTab = .selfDevelopment
     @State private var tabAnimation = false
     
     var body: some View {
-        ZStack {
-            // Background
-            LinearGradient(
-                colors: [EgyptianColors.desertSand, EgyptianColors.papyrus],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-            
-            VStack(spacing: 0) {
-                // Custom Header
-                headerView
+        GeometryReader { geometry in
+            ZStack {
+                // Background
+                LinearGradient(
+                    colors: [EgyptianColors.desertSand, EgyptianColors.papyrus],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
                 
-                // Content
-                TabView(selection: $selectedTab) {
-                    SelfDevelopmentView()
-                        .environmentObject(appState)
-                        .tag(MainTab.selfDevelopment)
+                VStack(spacing: 0) {
+                    // Custom Header
+                    headerView(geometry: geometry)
                     
-                    HistoryView()
-                        .environmentObject(appState)
-                        .tag(MainTab.history)
+                    // Content
+                    TabView(selection: $selectedTab) {
+                        SelfDevelopmentView()
+                            .environmentObject(appState)
+                            .tag(MainTab.selfDevelopment)
+                        
+                        HistoryView()
+                            .environmentObject(appState)
+                            .tag(MainTab.history)
+                        
+                        GamesView()
+                            .environmentObject(appState)
+                            .tag(MainTab.games)
+                    }
+                    .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                     
-                    GamesView()
-                        .environmentObject(appState)
-                        .tag(MainTab.games)
+                    // Custom Tab Bar
+                    customTabBar(geometry: geometry)
                 }
-                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-                
-                // Custom Tab Bar
-                customTabBar
             }
         }
-        .environmentObject(appState)
     }
     
     @ViewBuilder
-    private var headerView: some View {
+    private func headerView(geometry: GeometryProxy) -> some View {
         HStack {
             // Egyptian ornament
             Text(EgyptianSymbols.eye)
-                .font(.system(size: 24))
+                .font(.system(size: geometry.size.width < 400 ? 20 : 24))
                 .foregroundColor(EgyptianColors.golden)
             
             Spacer()
             
             // App title
             Text("Eterna Egypt")
-                .font(EgyptianFonts.title())
+                .font(EgyptianFonts.title(for: geometry))
                 .foregroundColor(EgyptianColors.textDark)
             
             Spacer()
             
             // Egyptian ornament
             Text(EgyptianSymbols.ankh)
-                .font(.system(size: 24))
+                .font(.system(size: geometry.size.width < 400 ? 20 : 24))
                 .foregroundColor(EgyptianColors.golden)
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 10)
-        .padding(.bottom, 16)
+        .padding(.horizontal, geometry.size.width < 400 ? 16 : 20)
+        .padding(.top, geometry.size.width < 400 ? 8 : 10)
+        .padding(.bottom, geometry.size.width < 400 ? 12 : 16)
         .background(
             Rectangle()
                 .fill(EgyptianColors.papyrus)
@@ -87,14 +88,14 @@ struct MainTabView: View {
     }
     
     @ViewBuilder
-    private var customTabBar: some View {
+    private func customTabBar(geometry: GeometryProxy) -> some View {
         HStack(spacing: 0) {
             ForEach(MainTab.allCases, id: \.self) { tab in
-                tabBarItem(for: tab)
+                tabBarItem(for: tab, geometry: geometry)
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 16)
+        .padding(.horizontal, geometry.size.width < 400 ? 16 : 20)
+        .padding(.vertical, geometry.size.width < 400 ? 12 : 16)
         .background(
             RoundedRectangle(cornerRadius: 25)
                 .fill(EgyptianColors.darkBrown)
@@ -105,11 +106,11 @@ struct MainTabView: View {
                     y: -5
                 )
         )
-        .padding(.horizontal, 20)
-        .padding(.bottom, 10)
+        .padding(.horizontal, geometry.size.width < 400 ? 16 : 20)
+        .padding(.bottom, geometry.size.width < 400 ? 8 : 10)
     }
     
-    private func tabBarItem(for tab: MainTab) -> some View {
+    private func tabBarItem(for tab: MainTab, geometry: GeometryProxy) -> some View {
         Button(action: {
             withAnimation(.easeInOut(duration: 0.3)) {
                 selectedTab = tab
@@ -119,7 +120,7 @@ struct MainTabView: View {
             VStack(spacing: 8) {
                 // Egyptian symbol
                 Text(tab.egyptianIcon)
-                    .font(.system(size: selectedTab == tab ? 28 : 24))
+                    .font(.system(size: selectedTab == tab ? (geometry.size.width < 400 ? 24 : 28) : (geometry.size.width < 400 ? 20 : 24)))
                     .foregroundColor(
                         selectedTab == tab ? 
                         EgyptianColors.hieroglyphGold : 
@@ -135,7 +136,7 @@ struct MainTabView: View {
                 
                 // Tab title
                 Text(tab.rawValue)
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .font(.system(size: geometry.size.width < 400 ? 10 : 12, weight: .medium, design: .rounded))
                     .foregroundColor(
                         selectedTab == tab ? 
                         EgyptianColors.hieroglyphGold : 

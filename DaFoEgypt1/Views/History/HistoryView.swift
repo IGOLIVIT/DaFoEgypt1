@@ -35,9 +35,9 @@ struct HistoryView: View {
     }
     
     var body: some View {
-        NavigationView {
+        GeometryReader { geometry in
             ScrollView {
-            VStack(spacing: 24) {
+            VStack(spacing: geometry.size.width < 400 ? 16 : 24) {
                 // Section selector
                 sectionSelector
                 
@@ -54,8 +54,8 @@ struct HistoryView: View {
                         .environmentObject(appState)
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 20)
+            .padding(.horizontal, geometry.size.width < 400 ? 16 : 20)
+            .padding(.top, geometry.size.width < 400 ? 16 : 20)
         }
         .onAppear {
             withAnimation(.easeInOut(duration: 0.8).delay(0.2)) {
@@ -63,7 +63,6 @@ struct HistoryView: View {
             }
         }
         }
-        .navigationBarHidden(true)
     }
     
     @ViewBuilder

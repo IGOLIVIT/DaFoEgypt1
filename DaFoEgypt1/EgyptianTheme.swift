@@ -65,13 +65,29 @@ extension Color {
 // MARK: - Egyptian Button Style
 struct EgyptianButtonStyle: ButtonStyle {
     var isSecondary: Bool = false
+    var geometry: GeometryProxy? = nil
     
     func makeBody(configuration: Configuration) -> some View {
+        let fontSize: CGFloat = {
+            guard let geo = geometry else { return 18 }
+            return geo.size.width < 400 ? 16 : 18
+        }()
+        
+        let horizontalPadding: CGFloat = {
+            guard let geo = geometry else { return 24 }
+            return geo.size.width < 400 ? 20 : 24
+        }()
+        
+        let verticalPadding: CGFloat = {
+            guard let geo = geometry else { return 16 }
+            return geo.size.width < 400 ? 14 : 16
+        }()
+        
         configuration.label
-            .font(.system(size: 18, weight: .semibold, design: .rounded))
+            .font(.system(size: fontSize, weight: .semibold, design: .rounded))
             .foregroundColor(isSecondary ? EgyptianColors.textDark : EgyptianColors.textLight)
-            .padding(.horizontal, 24)
-            .padding(.vertical, 16)
+            .padding(.horizontal, horizontalPadding)
+            .padding(.vertical, verticalPadding)
             .background(
                 RoundedRectangle(cornerRadius: 12)
                     .fill(
@@ -125,25 +141,47 @@ struct EgyptianCardStyle: ViewModifier {
 
 // MARK: - Egyptian Typography
 struct EgyptianFonts {
-    static func title() -> Font {
-        .system(size: 28, weight: .bold, design: .serif)
+    static func title(for geometry: GeometryProxy? = nil) -> Font {
+        let baseSize: CGFloat = 28
+        let scaleFactor = geometry?.size.width ?? 400
+        let adjustedSize = scaleFactor < 400 ? baseSize * 0.85 : baseSize
+        return .system(size: adjustedSize, weight: .bold, design: .serif)
     }
     
-    static func headline() -> Font {
-        .system(size: 22, weight: .semibold, design: .serif)
+    static func headline(for geometry: GeometryProxy? = nil) -> Font {
+        let baseSize: CGFloat = 22
+        let scaleFactor = geometry?.size.width ?? 400
+        let adjustedSize = scaleFactor < 400 ? baseSize * 0.9 : baseSize
+        return .system(size: adjustedSize, weight: .semibold, design: .serif)
     }
     
-    static func body() -> Font {
-        .system(size: 16, weight: .regular, design: .rounded)
+    static func body(for geometry: GeometryProxy? = nil) -> Font {
+        let baseSize: CGFloat = 16
+        let scaleFactor = geometry?.size.width ?? 400
+        let adjustedSize = scaleFactor < 400 ? baseSize * 0.9 : baseSize
+        return .system(size: adjustedSize, weight: .regular, design: .rounded)
     }
     
-    static func caption() -> Font {
-        .system(size: 14, weight: .medium, design: .rounded)
+    static func caption(for geometry: GeometryProxy? = nil) -> Font {
+        let baseSize: CGFloat = 14
+        let scaleFactor = geometry?.size.width ?? 400
+        let adjustedSize = scaleFactor < 400 ? baseSize * 0.9 : baseSize
+        return .system(size: adjustedSize, weight: .medium, design: .rounded)
     }
     
-    static func hieroglyph() -> Font {
-        .system(size: 24, weight: .bold, design: .monospaced)
+    static func hieroglyph(for geometry: GeometryProxy? = nil) -> Font {
+        let baseSize: CGFloat = 24
+        let scaleFactor = geometry?.size.width ?? 400
+        let adjustedSize = scaleFactor < 400 ? baseSize * 0.85 : baseSize
+        return .system(size: adjustedSize, weight: .bold, design: .monospaced)
     }
+    
+    // Backward compatibility methods
+    static func title() -> Font { title(for: nil) }
+    static func headline() -> Font { headline(for: nil) }
+    static func body() -> Font { body(for: nil) }
+    static func caption() -> Font { caption(for: nil) }
+    static func hieroglyph() -> Font { hieroglyph(for: nil) }
 }
 
 // MARK: - View Extensions
@@ -152,8 +190,8 @@ extension View {
         self.modifier(EgyptianCardStyle())
     }
     
-    func egyptianButton(secondary: Bool = false) -> some View {
-        self.buttonStyle(EgyptianButtonStyle(isSecondary: secondary))
+    func egyptianButton(secondary: Bool = false, geometry: GeometryProxy? = nil) -> some View {
+        self.buttonStyle(EgyptianButtonStyle(isSecondary: secondary, geometry: geometry))
     }
 }
 

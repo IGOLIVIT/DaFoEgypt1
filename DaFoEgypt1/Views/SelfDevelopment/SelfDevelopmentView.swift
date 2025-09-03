@@ -35,7 +35,7 @@ struct SelfDevelopmentView: View {
     }
     
     var body: some View {
-        NavigationView {
+        GeometryReader { geometry in
             ZStack {
                 // Background
                 LinearGradient(
@@ -50,30 +50,30 @@ struct SelfDevelopmentView: View {
                 .ignoresSafeArea()
                 
                 ScrollView {
-                VStack(spacing: 24) {
-                    // Header
-                    headerView
-                    
-                    // Section selector
-                    sectionSelector
-                    
-                    // Content based on selected section
-                    switch selectedSection {
-                    case .meditation:
-                        MeditationSectionView()
-                            .environmentObject(appState)
-                    case .journal:
-                        JournalSectionView()
-                            .environmentObject(appState)
-                    case .mindTraining:
-                        MindTrainingSectionView()
-                            .environmentObject(appState)
+                    VStack(spacing: geometry.size.width < 400 ? 16 : 24) {
+                        // Header
+                        headerView(geometry: geometry)
+                        
+                        // Section selector
+                        sectionSelector(geometry: geometry)
+                        
+                        // Content based on selected section
+                        switch selectedSection {
+                        case .meditation:
+                            MeditationSectionView()
+                                .environmentObject(appState)
+                        case .journal:
+                            JournalSectionView()
+                                .environmentObject(appState)
+                        case .mindTraining:
+                            MindTrainingSectionView()
+                                .environmentObject(appState)
+                        }
                     }
+                    .padding(.horizontal, geometry.size.width < 400 ? 16 : 20)
+                    .padding(.top, geometry.size.width < 400 ? 16 : 20)
+                    .padding(.bottom, 100) // Extra padding for tab bar
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 20)
-                .padding(.bottom, 100) // Extra padding for tab bar
-            }
             }
             .onAppear {
                 withAnimation(.easeInOut(duration: 0.8).delay(0.2)) {
@@ -81,203 +81,222 @@ struct SelfDevelopmentView: View {
                 }
             }
         }
-        .navigationBarHidden(true)
     }
     
     @ViewBuilder
-    private var headerView: some View {
+    private func headerView(geometry: GeometryProxy) -> some View {
         VStack(spacing: 12) {
             Text("🧘‍♀️ Self Development")
-                .font(EgyptianFonts.title())
+                .font(EgyptianFonts.title(for: geometry))
                 .foregroundColor(EgyptianColors.textDark)
             
             Text("Develop your mind, body, and spirit with ancient Egyptian wisdom")
-                .font(EgyptianFonts.body())
+                .font(EgyptianFonts.body(for: geometry))
                 .foregroundColor(EgyptianColors.textDark.opacity(0.8))
                 .multilineTextAlignment(.center)
-                .lineSpacing(4)
+                .lineSpacing(geometry.size.width < 400 ? 2 : 4)
         }
         .opacity(animateCards ? 1.0 : 0.0)
         .animation(.easeInOut(duration: 0.8), value: animateCards)
     }
     
     @ViewBuilder
-    private var sectionSelector: some View {
-        HStack(spacing: 12) {
+    private func sectionSelector(geometry: GeometryProxy) -> some View {
+        HStack(spacing: geometry.size.width < 400 ? 8 : 12) {
             ForEach(SelfDevelopmentSection.allCases, id: \.self) { section in
-                sectionButton(for: section)
+                sectionButton(for: section, geometry: geometry)
             }
         }
-        .padding(.horizontal, 4)
+        .opacity(animateCards ? 1.0 : 0.0)
+        .animation(.easeInOut(duration: 0.8).delay(0.3), value: animateCards)
     }
     
-    private func sectionButton(for section: SelfDevelopmentSection) -> some View {
+    private func sectionButton(for section: SelfDevelopmentSection, geometry: GeometryProxy) -> some View {
         Button(action: {
             withAnimation(.easeInOut(duration: 0.3)) {
                 selectedSection = section
             }
         }) {
-            VStack(spacing: 8) {
+            VStack(spacing: geometry.size.width < 400 ? 6 : 8) {
                 Text(section.egyptianIcon)
-                    .font(.system(size: 24))
+                    .font(.system(size: geometry.size.width < 400 ? 20 : 24))
                     .foregroundColor(
-                        selectedSection == section ? 
-                        EgyptianColors.textLight : 
-                        EgyptianColors.textDark
+                        selectedSection == section ?
+                        EgyptianColors.hieroglyphGold :
+                        EgyptianColors.textDark.opacity(0.6)
                     )
                 
                 Text(section.rawValue)
-                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                    .font(EgyptianFonts.caption(for: geometry))
                     .foregroundColor(
-                        selectedSection == section ? 
-                        EgyptianColors.textLight : 
-                        EgyptianColors.textDark
+                        selectedSection == section ?
+                        EgyptianColors.textDark :
+                        EgyptianColors.textDark.opacity(0.6)
                     )
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
+            .padding(.vertical, geometry.size.width < 400 ? 12 : 16)
             .background(
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: 12)
                     .fill(
-                        selectedSection == section ? 
-                        LinearGradient(
-                            colors: [EgyptianColors.golden, EgyptianColors.goldenDark],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ) : 
-                        LinearGradient(
-                            colors: [EgyptianColors.papyrus, EgyptianColors.papyrus],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
+                        selectedSection == section ?
+                        EgyptianColors.golden.opacity(0.2) :
+                        Color.clear
                     )
-                    .shadow(
-                        color: EgyptianColors.darkBrown.opacity(0.2),
-                        radius: selectedSection == section ? 8 : 4,
-                        x: 0,
-                        y: selectedSection == section ? 4 : 2
-                    )
+                    .animation(.easeInOut(duration: 0.3), value: selectedSection)
             )
         }
         .buttonStyle(PlainButtonStyle())
-        .scaleEffect(animateCards ? 1.0 : 0.8)
-        .opacity(animateCards ? 1.0 : 0.0)
-        .animation(
-            .easeInOut(duration: 0.6)
-            .delay(Double(SelfDevelopmentSection.allCases.firstIndex(of: section) ?? 0) * 0.1),
-            value: animateCards
-        )
     }
 }
 
 // MARK: - Meditation Section
 struct MeditationSectionView: View {
     @EnvironmentObject var appState: AppState
-
+    @State private var showMeditationPlayer = false
+    @State private var selectedMeditation: MeditationType?
     
     var body: some View {
         VStack(spacing: 20) {
-            // Header
-            HStack {
-                Text("🧘‍♀️ Egyptian Meditation")
-                    .font(EgyptianFonts.headline())
-                    .foregroundColor(EgyptianColors.textDark)
-                
-                Spacer()
-                
-                Text("\(appState.meditationProgress.count) sessions")
-                    .font(EgyptianFonts.caption())
-                    .foregroundColor(EgyptianColors.golden)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(EgyptianColors.golden.opacity(0.2))
-                    )
-            }
+            // Progress overview
+            progressOverview
             
             // Meditation types
-            LazyVGrid(columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ], spacing: 16) {
-                ForEach(MeditationType.allCases, id: \.self) { meditation in
-                    meditationCard(for: meditation)
-                }
-            }
+            meditationGrid
+        }
+        .fullScreenCover(item: $selectedMeditation) { meditation in
+            MeditationPlayerView(meditation: meditation)
+                .environmentObject(appState)
+        }
+    }
+    
+    @ViewBuilder
+    private var progressOverview: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("🧘‍♀️ Your Meditation Journey")
+                .font(EgyptianFonts.headline())
+                .foregroundColor(EgyptianColors.textDark)
             
-            // Recent sessions
-            if !appState.meditationProgress.isEmpty {
-                recentSessionsView
+            HStack(spacing: 20) {
+                statCard(
+                    title: "Sessions",
+                    value: "\(appState.meditationProgress.count)",
+                    icon: "🧘‍♀️"
+                )
+                
+                statCard(
+                    title: "Total Time",
+                    value: formatTotalTime(),
+                    icon: "⏰"
+                )
+                
+                statCard(
+                    title: "Streak",
+                    value: "\(calculateStreak()) days",
+                    icon: "🔥"
+                )
+            }
+        }
+        .padding(20)
+        .egyptianCard()
+    }
+    
+    private func statCard(title: String, value: String, icon: String) -> some View {
+        VStack(spacing: 8) {
+            Text(icon)
+                .font(.system(size: 24))
+            
+            Text(value)
+                .font(EgyptianFonts.headline())
+                .foregroundColor(EgyptianColors.textDark)
+            
+            Text(title)
+                .font(EgyptianFonts.caption())
+                .foregroundColor(EgyptianColors.textDark.opacity(0.7))
+        }
+        .frame(maxWidth: .infinity)
+    }
+    
+    @ViewBuilder
+    private var meditationGrid: some View {
+        LazyVGrid(columns: [
+            GridItem(.flexible()),
+            GridItem(.flexible())
+        ], spacing: 16) {
+            ForEach(MeditationType.allCases) { meditation in
+                meditationCard(for: meditation)
             }
         }
     }
     
     private func meditationCard(for meditation: MeditationType) -> some View {
-        NavigationLink(destination: 
-            MeditationPlayerView(meditation: meditation)
-                .environmentObject(appState)
-                .navigationBarHidden(true)
-        ) {
-            VStack(spacing: 12) {
-                Text(meditation.icon)
-                    .font(.system(size: 40))
-                
-                Text(meditation.rawValue)
-                    .font(EgyptianFonts.caption())
-                    .foregroundColor(EgyptianColors.textDark)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
-                
-                Text("\(Int(meditation.duration / 60)) min")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(EgyptianColors.golden)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(16)
-        }
-        .egyptianCard()
-        .buttonStyle(PlainButtonStyle())
-    }
-    
-    @ViewBuilder
-    private var recentSessionsView: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Recent Sessions")
-                .font(EgyptianFonts.headline())
-                .foregroundColor(EgyptianColors.textDark)
-            
-            ForEach(appState.meditationProgress.suffix(3).reversed(), id: \.id) { session in
+        Button(action: {
+            selectedMeditation = meditation
+        }) {
+            VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Text(session.type.icon)
-                        .font(.system(size: 20))
-                    
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(session.type.rawValue)
-                            .font(EgyptianFonts.body())
-                            .foregroundColor(EgyptianColors.textDark)
-                        
-                        Text(session.date, style: .date)
-                            .font(EgyptianFonts.caption())
-                            .foregroundColor(EgyptianColors.textDark.opacity(0.7))
-                    }
+                    Text(meditation.icon)
+                        .font(.system(size: 32))
                     
                     Spacer()
                     
-                    if session.completed {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(EgyptianColors.turquoise)
-                    }
+                    Text("\(Int(meditation.duration / 60)) min")
+                        .font(EgyptianFonts.caption())
+                        .foregroundColor(EgyptianColors.textDark.opacity(0.7))
                 }
-                .padding(12)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(EgyptianColors.papyrus.opacity(0.5))
-                )
+                
+                Text(meditation.rawValue)
+                    .font(EgyptianFonts.headline())
+                    .foregroundColor(EgyptianColors.textDark)
+                    .multilineTextAlignment(.leading)
+                
+                Text(meditation.description)
+                    .font(EgyptianFonts.caption())
+                    .foregroundColor(EgyptianColors.textDark.opacity(0.8))
+                    .lineSpacing(2)
+                    .multilineTextAlignment(.leading)
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .egyptianCard()
+    }
+    
+    private func formatTotalTime() -> String {
+        let totalSeconds = appState.meditationProgress.reduce(0) { $0 + $1.duration }
+        let hours = Int(totalSeconds) / 3600
+        let minutes = (Int(totalSeconds) % 3600) / 60
+        
+        if hours > 0 {
+            return "\(hours)h \(minutes)m"
+        } else {
+            return "\(minutes)m"
+        }
+    }
+    
+    private func calculateStreak() -> Int {
+        // Simple streak calculation - count consecutive days with sessions
+        let calendar = Calendar.current
+        let today = Date()
+        var streak = 0
+        
+        for i in 0..<30 { // Check last 30 days
+            let date = calendar.date(byAdding: .day, value: -i, to: today)!
+            let hasSession = appState.meditationProgress.contains { session in
+                calendar.isDate(session.date, inSameDayAs: date)
+            }
+            
+            if hasSession {
+                streak += 1
+            } else if i > 0 { // Don't break on today if no session yet
+                break
             }
         }
+        
+        return streak
     }
 }
 
@@ -288,31 +307,14 @@ struct JournalSectionView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            // Header
-            HStack {
-                Text("📜 Pharaoh's Journal")
-                    .font(EgyptianFonts.headline())
-                    .foregroundColor(EgyptianColors.textDark)
-                
-                Spacer()
-                
-                Button(action: {
-                    showNewEntry = true
-                }) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 24))
-                        .foregroundColor(EgyptianColors.golden)
-                }
-            }
-            
-            // Journal prompts
-            journalPromptsView
+            // Header with add button
+            journalHeader
             
             // Recent entries
-            if !appState.journalEntries.isEmpty {
-                recentEntriesView
-            } else {
+            if appState.journalEntries.isEmpty {
                 emptyJournalView
+            } else {
+                journalEntries
             }
         }
         .sheet(isPresented: $showNewEntry) {
@@ -322,114 +324,96 @@ struct JournalSectionView: View {
     }
     
     @ViewBuilder
-    private var journalPromptsView: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Daily Reflections")
-                .font(EgyptianFonts.headline())
-                .foregroundColor(EgyptianColors.textDark)
-            
-            LazyVGrid(columns: [GridItem(.flexible())], spacing: 12) {
-                ForEach(journalPrompts, id: \.self) { prompt in
-                    Button(action: {
-                        // This would open the journal entry with this prompt
-                        showNewEntry = true
-                    }) {
-                        HStack {
-                            Text(EgyptianSymbols.papyrus)
-                                .font(.system(size: 20))
-                                .foregroundColor(EgyptianColors.golden)
-                            
-                            Text(prompt)
-                                .font(EgyptianFonts.body())
-                                .foregroundColor(EgyptianColors.textDark)
-                                .multilineTextAlignment(.leading)
-                            
-                            Spacer()
-                            
-                            Image(systemName: "arrow.right.circle")
-                                .foregroundColor(EgyptianColors.golden)
-                        }
-                        .padding(16)
-                    }
-                    .egyptianCard()
-                    .buttonStyle(PlainButtonStyle())
-                }
+    private var journalHeader: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("📜 Wisdom Journal")
+                    .font(EgyptianFonts.headline())
+                    .foregroundColor(EgyptianColors.textDark)
+                
+                Text("Record your thoughts and insights")
+                    .font(EgyptianFonts.caption())
+                    .foregroundColor(EgyptianColors.textDark.opacity(0.7))
             }
-        }
-    }
-    
-    @ViewBuilder
-    private var recentEntriesView: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Recent Entries")
-                .font(EgyptianFonts.headline())
-                .foregroundColor(EgyptianColors.textDark)
             
-            ForEach(appState.journalEntries.suffix(3).reversed(), id: \.id) { entry in
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Text(entry.mood.emoji)
-                            .font(.system(size: 20))
-                        
-                        Text(entry.mood.rawValue)
-                            .font(EgyptianFonts.caption())
-                            .foregroundColor(entry.mood.color)
-                        
-                        Spacer()
-                        
-                        Text(entry.date, style: .date)
-                            .font(EgyptianFonts.caption())
-                            .foregroundColor(EgyptianColors.textDark.opacity(0.7))
-                    }
-                    
-                    Text(entry.prompt)
-                        .font(EgyptianFonts.caption())
-                        .foregroundColor(EgyptianColors.textDark.opacity(0.8))
-                        .italic()
-                    
-                    Text(entry.response)
-                        .font(EgyptianFonts.body())
-                        .foregroundColor(EgyptianColors.textDark)
-                        .lineLimit(3)
-                }
-                .padding(16)
-                .egyptianCard()
+            Spacer()
+            
+            Button("New Entry") {
+                showNewEntry = true
             }
+            .egyptianButton()
         }
+        .padding(20)
+        .egyptianCard()
     }
     
     @ViewBuilder
     private var emptyJournalView: some View {
         VStack(spacing: 16) {
-            Text(EgyptianSymbols.papyrus)
+            Text("📜")
                 .font(.system(size: 60))
-                .foregroundColor(EgyptianColors.golden.opacity(0.6))
             
             Text("Begin Your Journey")
                 .font(EgyptianFonts.headline())
                 .foregroundColor(EgyptianColors.textDark)
             
-            Text("Start writing your thoughts and reflections like the ancient scribes")
+            Text("Start writing your first journal entry to capture your thoughts and wisdom.")
                 .font(EgyptianFonts.body())
                 .foregroundColor(EgyptianColors.textDark.opacity(0.7))
                 .multilineTextAlignment(.center)
+                .lineSpacing(4)
             
             Button("Write First Entry") {
                 showNewEntry = true
             }
             .egyptianButton()
         }
-        .padding(32)
+        .padding(40)
         .egyptianCard()
     }
     
-    private let journalPrompts = [
-        "What wisdom did I gain today, like the ancient pharaohs?",
-        "How can I build my inner pyramid of strength?",
-        "What would the gods of Egypt teach me about this challenge?",
-        "Like the Nile's flow, how can I adapt to change?",
-        "What treasures of knowledge did I discover today?"
-    ]
+    @ViewBuilder
+    private var journalEntries: some View {
+        LazyVStack(spacing: 12) {
+            ForEach(appState.journalEntries.sorted(by: { $0.date > $1.date }).prefix(5), id: \.id) { entry in
+                journalEntryCard(entry)
+            }
+        }
+    }
+    
+    private func journalEntryCard(_ entry: JournalEntry) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text(entry.mood.emoji)
+                    .font(.system(size: 24))
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(entry.mood.rawValue)
+                        .font(EgyptianFonts.caption())
+                        .foregroundColor(entry.mood.color)
+                    
+                    Text(entry.date, style: .date)
+                        .font(EgyptianFonts.caption())
+                        .foregroundColor(EgyptianColors.textDark.opacity(0.6))
+                }
+                
+                Spacer()
+            }
+            
+            Text(entry.prompt)
+                .font(EgyptianFonts.body())
+                .foregroundColor(EgyptianColors.textDark)
+                .fontWeight(.medium)
+            
+            Text(entry.response)
+                .font(EgyptianFonts.body())
+                .foregroundColor(EgyptianColors.textDark.opacity(0.8))
+                .lineSpacing(4)
+                .lineLimit(3)
+        }
+        .padding(16)
+        .egyptianCard()
+    }
 }
 
 // MARK: - Mind Training Section
@@ -437,33 +421,44 @@ struct MindTrainingSectionView: View {
     @EnvironmentObject var appState: AppState
     @State private var selectedCard: MindTrainingCard?
     
+    private let mindTrainingCards: [MindTrainingCard] = [
+        MindTrainingCard(
+            title: "Pharaoh's Focus",
+            description: "Develop laser-sharp concentration like ancient rulers",
+            task: "Practice focused attention on a single object for 10 minutes",
+            icon: "👑",
+            category: .focus
+        ),
+        MindTrainingCard(
+            title: "Scribe's Memory",
+            description: "Enhance your memory using ancient Egyptian techniques",
+            task: "Memorize and recite a sequence of hieroglyphs",
+            icon: "📜",
+            category: .wisdom
+        ),
+        MindTrainingCard(
+            title: "Desert Resilience",
+            description: "Build mental toughness through challenging exercises",
+            task: "Complete a difficult task without giving up",
+            icon: "🏜️",
+            category: .resilience
+        ),
+        MindTrainingCard(
+            title: "Creative Visualization",
+            description: "Use imagination to create vivid mental images",
+            task: "Visualize building a pyramid step by step",
+            icon: "🎨",
+            category: .creativity
+        )
+    ]
+    
     var body: some View {
         VStack(spacing: 20) {
             // Header
-            HStack {
-                Text("🧠 Mind Training")
-                    .font(EgyptianFonts.headline())
-                    .foregroundColor(EgyptianColors.textDark)
-                
-                Spacer()
-                
-                Text("Daily Exercises")
-                    .font(EgyptianFonts.caption())
-                    .foregroundColor(EgyptianColors.golden)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(EgyptianColors.golden.opacity(0.2))
-                    )
-            }
+            mindTrainingHeader
             
-            // Mind training cards
-            LazyVGrid(columns: [GridItem(.flexible())], spacing: 16) {
-                ForEach(mindTrainingCards, id: \.id) { card in
-                    mindTrainingCardView(card: card)
-                }
-            }
+            // Training cards
+            trainingGrid
         }
         .sheet(item: $selectedCard) { card in
             MindTrainingDetailView(card: card)
@@ -471,26 +466,48 @@ struct MindTrainingSectionView: View {
         }
     }
     
-    private func mindTrainingCardView(card: MindTrainingCard) -> some View {
+    @ViewBuilder
+    private var mindTrainingHeader: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("🧠 Mind Training")
+                .font(EgyptianFonts.headline())
+                .foregroundColor(EgyptianColors.textDark)
+            
+            Text("Strengthen your mental abilities with exercises inspired by ancient Egyptian wisdom and practices.")
+                .font(EgyptianFonts.body())
+                .foregroundColor(EgyptianColors.textDark.opacity(0.8))
+                .lineSpacing(4)
+        }
+        .padding(20)
+        .egyptianCard()
+    }
+    
+    @ViewBuilder
+    private var trainingGrid: some View {
+        LazyVGrid(columns: [
+            GridItem(.flexible()),
+            GridItem(.flexible())
+        ], spacing: 16) {
+            ForEach(mindTrainingCards, id: \.id) { card in
+                trainingCard(card)
+            }
+        }
+    }
+    
+    private func trainingCard(_ card: MindTrainingCard) -> some View {
         Button(action: {
             selectedCard = card
         }) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Text(card.icon)
-                        .font(.system(size: 30))
+                        .font(.system(size: 32))
                     
                     Spacer()
                     
-                    Text(card.category.rawValue)
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(card.category.color)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(card.category.color.opacity(0.2))
-                        )
+                    Circle()
+                        .fill(card.category.color)
+                        .frame(width: 12, height: 12)
                 }
                 
                 Text(card.title)
@@ -499,66 +516,20 @@ struct MindTrainingSectionView: View {
                     .multilineTextAlignment(.leading)
                 
                 Text(card.description)
-                    .font(EgyptianFonts.body())
+                    .font(EgyptianFonts.caption())
                     .foregroundColor(EgyptianColors.textDark.opacity(0.8))
-                    .lineLimit(3)
+                    .lineSpacing(2)
                     .multilineTextAlignment(.leading)
             }
+            .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(20)
         }
-        .egyptianCard()
         .buttonStyle(PlainButtonStyle())
+        .egyptianCard()
     }
-    
-    private let mindTrainingCards = [
-        MindTrainingCard(
-            title: "Pharaoh's Focus",
-            description: "Like a pharaoh ruling Egypt, train your mind to focus on one task with unwavering attention.",
-            task: "Choose one important task today and give it your complete focus for 25 minutes, like a pharaoh's decree.",
-            icon: "👑",
-            category: .focus
-        ),
-        MindTrainingCard(
-            title: "Scribe's Creativity",
-            description: "Channel the creativity of ancient scribes who created beautiful hieroglyphs and stories.",
-            task: "Write or draw something creative for 15 minutes, letting your imagination flow like the Nile.",
-            icon: "✍️",
-            category: .creativity
-        ),
-        MindTrainingCard(
-            title: "Desert Resilience",
-            description: "Build mental strength like the pyramids that have withstood thousands of years in the desert.",
-            task: "When facing a challenge today, pause and ask: 'How would a pyramid endure this?'",
-            icon: "🏜️",
-            category: .resilience
-        ),
-        MindTrainingCard(
-            title: "Ancient Wisdom",
-            description: "Seek wisdom like the ancient Egyptian philosophers and priests who studied the mysteries of life.",
-            task: "Spend 10 minutes reflecting on a lesson you learned recently and how it applies to your life.",
-            icon: EgyptianSymbols.eye,
-            category: .wisdom
-        ),
-        MindTrainingCard(
-            title: "Nile's Patience",
-            description: "Learn patience from the Nile River, which carved the landscape slowly over millennia.",
-            task: "Practice patience today by taking three deep breaths before responding to any frustration.",
-            icon: "🌊",
-            category: .resilience
-        ),
-        MindTrainingCard(
-            title: "Hieroglyph Memory",
-            description: "Train your memory like ancient scribes who memorized thousands of hieroglyphic symbols.",
-            task: "Memorize a short poem, quote, or list of items using visualization techniques.",
-            icon: "🧠",
-            category: .focus
-        )
-    ]
 }
 
 #Preview {
     SelfDevelopmentView()
         .environmentObject(AppState())
 }
-

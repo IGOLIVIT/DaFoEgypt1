@@ -35,18 +35,18 @@ struct OnboardingView: View {
                 // Animated background elements
                 backgroundAnimations(geometry: geometry)
                 
-                VStack(spacing: 40) {
+                VStack(spacing: geometry.size.width < 400 ? 24 : 40) {
                     Spacer()
                     
                     // Main content
-                    onboardingContent
+                    onboardingContent(geometry: geometry)
                     
                     Spacer()
                     
                     // Navigation buttons
-                    navigationButtons
+                    navigationButtons(geometry: geometry)
                 }
-                .padding(.horizontal, 32)
+                .padding(.horizontal, geometry.size.width < 400 ? 20 : 32)
             }
         }
         .onAppear {
@@ -121,11 +121,11 @@ struct OnboardingView: View {
     }
     
     @ViewBuilder
-    private var onboardingContent: some View {
-        VStack(spacing: 30) {
+    private func onboardingContent(geometry: GeometryProxy) -> some View {
+        VStack(spacing: geometry.size.width < 400 ? 20 : 30) {
             // Title
             Text(currentStep.title)
-                .font(EgyptianFonts.title())
+                .font(EgyptianFonts.title(for: geometry))
                 .foregroundColor(EgyptianColors.textLight)
                 .multilineTextAlignment(.center)
                 .opacity(textOpacity)
@@ -133,22 +133,22 @@ struct OnboardingView: View {
             
             // Description
             Text(currentStep.description)
-                .font(EgyptianFonts.body())
+                .font(EgyptianFonts.body(for: geometry))
                 .foregroundColor(EgyptianColors.textLight.opacity(0.9))
                 .multilineTextAlignment(.center)
-                .lineSpacing(4)
+                .lineSpacing(geometry.size.width < 400 ? 2 : 4)
                 .opacity(textOpacity)
                 .animation(.easeInOut(duration: 1.0).delay(0.3), value: textOpacity)
             
             // Step-specific content
-            stepSpecificContent
+            stepSpecificContent(geometry: geometry)
                 .opacity(textOpacity)
                 .animation(.easeInOut(duration: 1.0).delay(0.6), value: textOpacity)
         }
     }
     
     @ViewBuilder
-    private var stepSpecificContent: some View {
+    private func stepSpecificContent(geometry: GeometryProxy) -> some View {
         switch currentStep {
         case .welcome:
             VStack(spacing: 16) {
@@ -219,7 +219,7 @@ struct OnboardingView: View {
     }
     
     @ViewBuilder
-    private var navigationButtons: some View {
+    private func navigationButtons(geometry: GeometryProxy) -> some View {
         HStack(spacing: 20) {
             if currentStep != .welcome {
                 Button("Previous") {

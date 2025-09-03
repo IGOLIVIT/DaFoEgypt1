@@ -20,26 +20,51 @@ class AppState: ObservableObject {
         loadData()
     }
     
+    deinit {
+        saveData()
+    }
+    
     private func loadData() {
-        // Load from UserDefaults
-        hasSeenOnboarding = UserDefaults.standard.bool(forKey: "hasSeenOnboarding")
-        
-        // Load meditation progress
-        if let data = UserDefaults.standard.data(forKey: "meditationProgress"),
-           let sessions = try? JSONDecoder().decode([MeditationSession].self, from: data) {
-            meditationProgress = sessions
-        }
-        
-        // Load journal entries
-        if let data = UserDefaults.standard.data(forKey: "journalEntries"),
-           let entries = try? JSONDecoder().decode([JournalEntry].self, from: data) {
-            journalEntries = entries
-        }
-        
-        // Load game scores
-        if let data = UserDefaults.standard.data(forKey: "gameScores"),
-           let scores = try? JSONDecoder().decode(GameScores.self, from: data) {
-            gameScores = scores
+        // Load from UserDefaults with error handling
+        do {
+            hasSeenOnboarding = UserDefaults.standard.bool(forKey: "hasSeenOnboarding")
+            
+            // Load meditation progress
+            if let data = UserDefaults.standard.data(forKey: "meditationProgress") {
+                do {
+                    meditationProgress = try JSONDecoder().decode([MeditationSession].self, from: data)
+                } catch {
+                    print("Failed to load meditation progress: \(error)")
+                    meditationProgress = []
+                }
+            }
+            
+            // Load journal entries
+            if let data = UserDefaults.standard.data(forKey: "journalEntries") {
+                do {
+                    journalEntries = try JSONDecoder().decode([JournalEntry].self, from: data)
+                } catch {
+                    print("Failed to load journal entries: \(error)")
+                    journalEntries = []
+                }
+            }
+            
+            // Load game scores
+            if let data = UserDefaults.standard.data(forKey: "gameScores") {
+                do {
+                    gameScores = try JSONDecoder().decode(GameScores.self, from: data)
+                } catch {
+                    print("Failed to load game scores: \(error)")
+                    gameScores = GameScores()
+                }
+            }
+        } catch {
+            print("Failed to load app data: \(error)")
+            // Reset to defaults if loading fails
+            hasSeenOnboarding = false
+            meditationProgress = []
+            journalEntries = []
+            gameScores = GameScores()
         }
     }
     

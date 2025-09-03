@@ -13,9 +13,9 @@ struct GamesView: View {
     @State private var selectedGame: GameType? = nil
     
     var body: some View {
-        NavigationView {
+        GeometryReader { geometry in
             ScrollView {
-            VStack(spacing: 24) {
+            VStack(spacing: geometry.size.width < 400 ? 16 : 24) {
                 // Header
                 headerView
                 
@@ -28,8 +28,8 @@ struct GamesView: View {
                 // Tips section
                 tipsSection
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 20)
+            .padding(.horizontal, geometry.size.width < 400 ? 16 : 20)
+            .padding(.top, geometry.size.width < 400 ? 16 : 20)
         }
         .onAppear {
             withAnimation(.easeInOut(duration: 0.8).delay(0.2)) {
@@ -40,7 +40,6 @@ struct GamesView: View {
             gameView(for: game)
         }
         }
-        .navigationBarHidden(true)
     }
     
     @ViewBuilder
